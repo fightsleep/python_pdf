@@ -5,23 +5,19 @@ async function uploadAndExtractPDF() {
     formData.append("pdfFile", file);
 
     try {
-      const response = await fetch("https://sleepqueue.com/extract-pdf", {
+      const response = await fetch("http://127.0.0.1:5000/extract-pdf", {
         method: "POST",
         body: formData
       });
-      
-
-      const lines = await response.json();
+      const data = await response.json();
+      console.log(data); // เพื่อดูโครงสร้างของข้อมูล
 
       // ประมวลผลและแสดงผลข้อมูลบนหน้าเว็บ
-      lines.forEach((line) => {
-        let parts = line.split(":");
-        if (parts.length === 2) {
-          let key = parts[0].trim();
-          let value = parts[1].trim();
-          fillFormData(key, value);
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          fillFormData(key, data[key]);
         }
-      });
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -29,14 +25,14 @@ async function uploadAndExtractPDF() {
 }
 
 function fillFormData(key, value) {
-  if (key.includes("Patient ID")) {
-    document.getElementById("PatientID").value = value.split(" ").pop(); // เอาเฉพาะหมายเลข
-  } else if (key.includes("DOB")) {
+  if (key === "Patient ID") {
+    document.getElementById("PatientID").value = value;
+  } else if (key === "DOB") {
     document.getElementById("DOB").value = value;
-  } else if (key.includes("Age")) {
-    document.getElementById("Age").value = value.split(" ")[0]; // เอาเฉพาะตัวเลขอายุ
-  } else if (key.includes("Usage") && !key.includes("days")) {
-    let usageDates = value.match(/\d{2}\/\d{2}\/\d{4} - \d{2}\/\d{2}\/\d{4}/); // ใช้ regular expression เพื่อหาวันที่
+  } else if (key === "Age") {
+    document.getElementById("Age").value = value;
+  } else if (key === "Compliance Report Date Range") {
+    let usageDates = value.match(/\d{2}\/\d{2}\/\d{4} - \d{2}\/\d{2}\/\d{4}/);
     if (usageDates && usageDates.length > 0) {
       document.getElementById("usage").value = usageDates[0];
     }
